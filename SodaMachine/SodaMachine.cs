@@ -10,13 +10,14 @@ namespace SodaMachine
         #region Fields
 
         private List<Soda> _inventory;
+        private List<MachineFunction> _functionList;
         private int _totalMoneyIn;
         private int _currentCredit;
         private string _systemMessage;
 
         #endregion
         #region Properties
-        private string SystemMessage 
+        private string SystemMessage
         {
             get { return _systemMessage; }
             set
@@ -28,9 +29,18 @@ namespace SodaMachine
         #region Constructor
         public SodaMachine()
         {
-            _inventory = new List<Soda>();
+            //Machine functions get added and bound here
+            _functionList = new List<MachineFunction>();
+            MachineFunction dispenseFunction = new MachineFunction("order", "Order Drink", TryDispenseDrink);
+            MachineFunction insertCoinFunction = new MachineFunction("insert", "Insert coins: (1), (5), (10), (20)", InsertCoin);
+            MachineFunction systemInformationFunction = new MachineFunction("s", "System Information", ShowSystemInformation);
+
+            _functionList.Add(dispenseFunction);
+            _functionList.Add(insertCoinFunction);
+            _functionList.Add(systemInformationFunction);
 
             //Initial machine inventory
+            _inventory = new List<Soda>();
             Soda coke = new Soda("Coke", 5, 25);
             Soda sprite = new Soda("Sprite", 0, 25);
             Soda fanta = new Soda("Fanta", 5, 25);
@@ -62,77 +72,34 @@ namespace SodaMachine
                 {
                     Console.WriteLine(
                         String.Format("{0, -12} - {1}", soda.Name,
-                            (soda.StockCount > 0 ? soda.Price.ToString()+".-" : "Out of stock"))
+                            (soda.StockCount > 0 ? soda.Price.ToString() + ".-" : "Out of stock"))
                     );
                 }
 
-                Console.WriteLine("\n(order) - Order Drink");
-                Console.WriteLine("(s) - System Diagnostics");
-                Console.WriteLine("(r) - Refund");
+                Console.WriteLine("\n");
+                foreach (var function in _functionList)
+                {
+                    Console.WriteLine($"({function.CallToken}) - {function.Description}");
+                }
 
-                Console.WriteLine("\nInsert coins: (1), (5), (10), (20)");
-                Console.WriteLine($"Credit: {_currentCredit}");
+                Console.WriteLine($"\nCredit: {_currentCredit}");
 
-                Console.WriteLine($"\n{SystemMessage}");
+                Console.WriteLine($"{SystemMessage}");
                 _systemMessage = String.Empty;
                 Console.WriteLine("Command: ");
-                string input = Console.ReadLine().ToLower();
+                var input = Console.ReadLine().ToLower().Split(' ');
+                var commandList = _functionList.Where(f => f.CallToken.Equals(input[0]));
 
-                //Check if drink selected
-                if (input.StartsWith("order"))
+                if (commandList.Any())
                 {
-                    string drink;
-                    try
+                    foreach (var command in commandList)
                     {
-                        drink = input.Split(' ')[1];
+                        if (input.Length >= 2)
+                            command.Function(input[input.Length - 1] ?? String.Empty);
+                        else command.Function(String.Empty);
                     }
-                    catch (IndexOutOfRangeException e)
-                    {
-                        SystemMessage = "No drink specified";
-                        continue;
-                    }
-                    catch (Exception e)
-                    {
-                        SystemMessage = "Command invalid";
-                        continue;
-                    }
-
-                    //Check to see drink exists in current inventory
-                    if (!_inventory.Where(s => s.Name.ToLower().Equals(drink)).Any())
-                        SystemMessage = "Drink doesn't exist";
-                    else
-                        foreach (var soda in _inventory.Where(s => s.Name.ToLower().Equals(drink)))
-                        {
-                            TryDispenseDrink(soda);
-                            break;
-                        }
-
-                    continue;
                 }
-
-                int coinInserted = 0;
-
-                //Check if coin inserted
-                if (Int32.TryParse(input, out coinInserted))
-                {
-                    //Coin inserted
-                    InsertCoin(coinInserted);
-                    continue;
-                }
-
-                //Check if valid command issued
-                switch (input)
-                {
-                    case "s":
-                        ShowSystemInformation();
-                        break;
-                    case "r":
-                        ReturnCredit();
-                        break;
-                    default:
-                        SystemMessage = "Command not recognised";
-                        continue;
-                }
+                else SystemMessage = "Unrecognized command";
             }
         }
 
@@ -153,8 +120,15 @@ namespace SodaMachine
         }
 
         //Handle coin inserts
-        private void InsertCoin(int coin)
+        private void InsertCoin(string option)
         {
+            int coin = 0;
+            if (!Int32.TryParse(option, out coin))
+            {
+                SystemMessage = "Coin not recognised";
+                return;
+            }
+
             switch (coin)
             {
                 case 1:
@@ -176,7 +150,7 @@ namespace SodaMachine
         }
 
         //Display vending machine system information
-        private void ShowSystemInformation()
+        private void ShowSystemInformation(string option)
         {
             Console.Clear();
             Console.WriteLine("########System Information########");
@@ -199,23 +173,50 @@ namespace SodaMachine
         }
 
         //Attempt to dispense a drink
-        private void TryDispenseDrink(Soda soda)
+        private void TryDispenseDrink(string option)
         {
-            if (soda.StockCount > 0)
+            if (option.Equals(String.Empty))
             {
-                if (_currentCredit >= soda.Price)
-                {
-                    soda.StockCount--;
-                    _totalMoneyIn += soda.Price;
-                    _currentCredit -= soda.Price;
-                    ReturnCredit();
-                    SystemMessage = $"{soda.Name} dispensed!";
-                    return;
-                }
-                SystemMessage = "Not enough credit";
+                SystemMessage = "No drink specified!";
                 return;
             }
-            SystemMessage = "Out of stock!";
+
+            _inventory.Where(s => s.Id == option).ToList().ForEach((soda) => 
+            {
+                if (soda.StockCount > 0)
+                {
+                    if (_currentCredit >= soda.Price)
+                    {
+                        soda.StockCount--;
+                        _totalMoneyIn += soda.Price;
+                        _currentCredit -= soda.Price;
+                        ReturnCredit();
+                        SystemMessage = $"{soda.Name} dispensed!";
+                        return;
+                    }
+                    SystemMessage = "Not enough credit";
+                    return;
+                }
+                SystemMessage = "Out of stock!";
+            });
+        }
+
+        #endregion
+        #region Nested Class
+
+        //Machine function class allows us to specify a function token, description and callback argument to execute
+        private class MachineFunction
+        {
+            public string CallToken { get; set; }
+            public string Description { get; set; }
+            public Action<string> Function { get; set; }
+
+            public MachineFunction(string callToken, string description, Action<string> function)
+            {
+                this.CallToken = callToken;
+                this.Description = description;
+                this.Function = function;
+            }
         }
 
         #endregion
