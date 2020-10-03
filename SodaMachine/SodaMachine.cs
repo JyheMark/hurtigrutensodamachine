@@ -7,31 +7,39 @@ namespace SodaMachine
 {
     class SodaMachine
     {
+        #region Fields
+
         private List<Soda> _inventory;
-        private int _moneyIn;
+        private int _totalMoneyIn;
         private int _currentCredit;
         private string _systemMessage;
 
+        #endregion
+        #region Constructor
         public SodaMachine()
         {
+            _inventory = new List<Soda>();
+
             //Initial machine inventory
             Soda coke = new Soda("Coke", 5, 25);
             Soda sprite = new Soda("Sprite", 0, 25);
             Soda fanta = new Soda("Fanta", 5, 25);
-
-            _inventory = new List<Soda>();
             Restock(coke, sprite, fanta);
 
             _currentCredit = 0;
             _systemMessage = "";
-            _moneyIn = 0;
+            _totalMoneyIn = 0;
         }
+        #endregion
+        #region Methods
 
+        //Start SodaMachine
         public void Start()
         {
             ShowOptions();
         }
 
+        //Display options to the user and handle response
         private void ShowOptions()
         {
             while (true)
@@ -60,7 +68,7 @@ namespace SodaMachine
                 Console.WriteLine("Command: ");
                 string input = Console.ReadLine().ToLower();
 
-                //Drink selected
+                //Check if drink selected
                 if (input.StartsWith("order"))
                 {
                     string drink;
@@ -79,7 +87,7 @@ namespace SodaMachine
                         continue;
                     }
 
-                    //Check to see drink exists
+                    //Check to see drink exists in current inventory
                     if (!_inventory.Where(s => s.Name.ToLower().Equals(drink)).Any())
                         _systemMessage = "Drink doesn't exist";
                     else
@@ -94,6 +102,7 @@ namespace SodaMachine
 
                 int coinInserted = 0;
 
+                //Check if coin inserted
                 if (Int32.TryParse(input, out coinInserted))
                 {
                     //Coin inserted
@@ -101,7 +110,7 @@ namespace SodaMachine
                     continue;
                 }
 
-                //Command issued
+                //Check if valid command issued
                 switch (input)
                 {
                     case "s":
@@ -124,7 +133,7 @@ namespace SodaMachine
                 _inventory.Add(soda);
         }
 
-        //Reset machine to default state
+        //Stock machine
         private void Restock(params Soda[] sodaList)
         {
             foreach (var soda in sodaList)
@@ -133,6 +142,7 @@ namespace SodaMachine
             }
         }
 
+        //Handle coin inserts
         private void InsertCoin(int coin)
         {
             switch (coin)
@@ -155,6 +165,7 @@ namespace SodaMachine
             }
         }
 
+        //Display vending machine system information
         private void ShowSystemInformation()
         {
             Console.Clear();
@@ -166,16 +177,18 @@ namespace SodaMachine
                     String.Format("{0, -12} - {1}", soda.Name, soda.StockCount)
                 );
             }
-            Console.WriteLine($"\nTotal money in: {_moneyIn}");
+            Console.WriteLine($"\nTotal money in: {_totalMoneyIn}");
             Console.ReadLine();
         }
 
+        //Return credits to user
         private void ReturnCredit()
         {
             _systemMessage = $"{_currentCredit} refunded.";
             _currentCredit = 0;
         }
 
+        //Attempt to dispense a drink
         private void TryDispenseDrink(Soda soda)
         {
             if (soda.StockCount > 0)
@@ -183,7 +196,7 @@ namespace SodaMachine
                 if (_currentCredit >= soda.Price)
                 {
                     soda.StockCount--;
-                    _moneyIn += soda.Price;
+                    _totalMoneyIn += soda.Price;
                     _currentCredit -= soda.Price;
                     ReturnCredit();
                     return;
@@ -193,5 +206,7 @@ namespace SodaMachine
             }
             _systemMessage = "Out of stock!";
         }
+
+        #endregion
     }
 }

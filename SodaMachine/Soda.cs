@@ -6,8 +6,13 @@ namespace SodaMachine
 {
     class Soda
     {
+        #region Fields
+
         private string _name;
         private string _id;
+
+        #endregion
+        #region Properties
 
         public string Id 
         { 
@@ -28,11 +33,16 @@ namespace SodaMachine
         public int StockCount { get; set; }
         public int Price { get; set; }
 
+        #endregion
+        #region Constructor
+
         public Soda(string name, int stockCount, int price)
         {
             this.Name = name;
             this.StockCount = stockCount;
             this.Price = price;
         }
+
+        #endregion
     }
 }
