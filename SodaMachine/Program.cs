@@ -1,4 +1,5 @@
 ﻿using System;
+using SodaMachine;
 
 namespace SodaMachine
 {
@@ -6,7 +7,9 @@ namespace SodaMachine
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            SodaMachine sodaMachine = new SodaMachine();
+
+            sodaMachine.Start();
         }
     }
 }
