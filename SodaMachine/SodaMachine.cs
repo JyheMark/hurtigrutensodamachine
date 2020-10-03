@@ -15,6 +15,16 @@ namespace SodaMachine
         private string _systemMessage;
 
         #endregion
+        #region Properties
+        private string SystemMessage 
+        {
+            get { return _systemMessage; }
+            set
+            {
+                _systemMessage += $"{value}\n";
+            }
+        }
+        #endregion
         #region Constructor
         public SodaMachine()
         {
@@ -27,7 +37,7 @@ namespace SodaMachine
             Restock(coke, sprite, fanta);
 
             _currentCredit = 0;
-            _systemMessage = "";
+            SystemMessage = "";
             _totalMoneyIn = 0;
         }
         #endregion
@@ -63,7 +73,7 @@ namespace SodaMachine
                 Console.WriteLine("\nInsert coins: (1), (5), (10), (20)");
                 Console.WriteLine($"Credit: {_currentCredit}");
 
-                Console.WriteLine($"\n{_systemMessage}");
+                Console.WriteLine($"\n{SystemMessage}");
                 _systemMessage = String.Empty;
                 Console.WriteLine("Command: ");
                 string input = Console.ReadLine().ToLower();
@@ -78,18 +88,18 @@ namespace SodaMachine
                     }
                     catch (IndexOutOfRangeException e)
                     {
-                        _systemMessage = "No drink specified";
+                        SystemMessage = "No drink specified";
                         continue;
                     }
                     catch (Exception e)
                     {
-                        _systemMessage = "Command invalid";
+                        SystemMessage = "Command invalid";
                         continue;
                     }
 
                     //Check to see drink exists in current inventory
                     if (!_inventory.Where(s => s.Name.ToLower().Equals(drink)).Any())
-                        _systemMessage = "Drink doesn't exist";
+                        SystemMessage = "Drink doesn't exist";
                     else
                         foreach (var soda in _inventory.Where(s => s.Name.ToLower().Equals(drink)))
                         {
@@ -120,7 +130,7 @@ namespace SodaMachine
                         ReturnCredit();
                         break;
                     default:
-                        _systemMessage = "Command not recognised";
+                        SystemMessage = "Command not recognised";
                         continue;
                 }
             }
@@ -160,7 +170,7 @@ namespace SodaMachine
                     _currentCredit += 20;
                     break;
                 default:
-                    _systemMessage = "Coin not recognised";
+                    SystemMessage = "Coin not recognised";
                     break;
             }
         }
@@ -184,7 +194,7 @@ namespace SodaMachine
         //Return credits to user
         private void ReturnCredit()
         {
-            _systemMessage = $"{_currentCredit} refunded.";
+            SystemMessage = $"{_currentCredit} refunded.";
             _currentCredit = 0;
         }
 
@@ -199,12 +209,13 @@ namespace SodaMachine
                     _totalMoneyIn += soda.Price;
                     _currentCredit -= soda.Price;
                     ReturnCredit();
+                    SystemMessage = $"{soda.Name} dispensed!";
                     return;
                 }
-                _systemMessage = "Not enough credit";
+                SystemMessage = "Not enough credit";
                 return;
             }
-            _systemMessage = "Out of stock!";
+            SystemMessage = "Out of stock!";
         }
 
         #endregion
