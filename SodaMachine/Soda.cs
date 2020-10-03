@@ -6,7 +6,25 @@ namespace SodaMachine
 {
     class Soda
     {
-        public string Name { get; set; }
+        private string _name;
+        private string _id;
+
+        public string Id 
+        { 
+            get { return _id; } 
+            private set { _id = value.ToLower(); } 
+        }
+
+        public string Name 
+        {
+            get { return _name; }
+            set 
+            { 
+                _name = value; 
+                Id = value.ToLower(); 
+            }
+        }
+
         public int StockCount { get; set; }
         public int Price { get; set; }
 

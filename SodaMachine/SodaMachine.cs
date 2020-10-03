@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SodaMachine
@@ -7,26 +8,23 @@ namespace SodaMachine
     class SodaMachine
     {
         private List<Soda> _inventory;
-        private List<Soda> _defaultStock;
+        private int _moneyIn;
         private int _currentCredit;
         private string _systemMessage;
 
         public SodaMachine()
         {
-            //Initial state of inventory
+            //Initial machine inventory
             Soda coke = new Soda("Coke", 5, 25);
-            Soda sprite = new Soda("Sprite", 5, 25);
+            Soda sprite = new Soda("Sprite", 0, 25);
             Soda fanta = new Soda("Fanta", 5, 25);
 
-            _defaultStock = new List<Soda>();
-            _defaultStock.Add(coke);
-            _defaultStock.Add(sprite);
-            _defaultStock.Add(fanta);
-
             _inventory = new List<Soda>();
-            Restock();
+            Restock(coke, sprite, fanta);
+
             _currentCredit = 0;
             _systemMessage = "";
+            _moneyIn = 0;
         }
 
         public void Start()
@@ -41,17 +39,20 @@ namespace SodaMachine
                 Console.Clear();
                 Console.WriteLine("########Drink Dispenser 5000########\n");
 
+                //Display current stock
                 foreach (var soda in _inventory)
                 {
                     Console.WriteLine(
-                        String.Format("{0, -12} - {1}.-", soda.Name,
-                            (soda.Price > 0 ? soda.Price.ToString() : "Out of stock"))
+                        String.Format("{0, -12} - {1}", soda.Name,
+                            (soda.StockCount > 0 ? soda.Price.ToString()+".-" : "Out of stock"))
                     );
                 }
 
-                Console.WriteLine("\n(s) - System Diagnostics");
+                Console.WriteLine("\n(order) - Order Drink");
+                Console.WriteLine("(s) - System Diagnostics");
                 Console.WriteLine("(r) - Refund");
-                Console.WriteLine("\nInsert coins (1, 5, 10, 20");
+
+                Console.WriteLine("\nInsert coins: (1), (5), (10), (20)");
                 Console.WriteLine($"Credit: {_currentCredit}");
 
                 Console.WriteLine($"\n{_systemMessage}");
@@ -60,18 +61,36 @@ namespace SodaMachine
                 string input = Console.ReadLine().ToLower();
 
                 //Drink selected
-                bool dispenseAttempt = false;
-                foreach (var soda in _inventory)
+                if (input.StartsWith("order"))
                 {
-                    if (input.Equals(soda.Name.ToLower()))
+                    string drink;
+                    try
                     {
-                        TryDispenseDrink(soda);
-                        dispenseAttempt = true;
-                        break;
+                        drink = input.Split(' ')[1];
                     }
-                }
-                if (dispenseAttempt)
+                    catch (IndexOutOfRangeException e)
+                    {
+                        _systemMessage = "No drink specified";
+                        continue;
+                    }
+                    catch (Exception e)
+                    {
+                        _systemMessage = "Command invalid";
+                        continue;
+                    }
+
+                    //Check to see drink exists
+                    if (!_inventory.Where(s => s.Name.ToLower().Equals(drink)).Any())
+                        _systemMessage = "Drink doesn't exist";
+                    else
+                        foreach (var soda in _inventory.Where(s => s.Name.ToLower().Equals(drink)))
+                        {
+                            TryDispenseDrink(soda);
+                            break;
+                        }
+
                     continue;
+                }
 
                 int coinInserted = 0;
 
@@ -86,6 +105,7 @@ namespace SodaMachine
                 switch (input)
                 {
                     case "s":
+                        ShowSystemInformation();
                         break;
                     case "r":
                         ReturnCredit();
@@ -97,12 +117,19 @@ namespace SodaMachine
             }
         }
 
-        //Reset machine to default state
-        private void Restock()
+        //Add drink to machine
+        private void AddDrink(Soda soda)
         {
-            foreach (var soda in _defaultStock)
-            {
+            if (!_inventory.Where(s => s.Name.ToLower().Equals(soda.Id)).Any())
                 _inventory.Add(soda);
+        }
+
+        //Reset machine to default state
+        private void Restock(params Soda[] sodaList)
+        {
+            foreach (var soda in sodaList)
+            {
+                AddDrink(soda);
             }
         }
 
@@ -128,19 +155,35 @@ namespace SodaMachine
             }
         }
 
-        public void ReturnCredit()
+        private void ShowSystemInformation()
+        {
+            Console.Clear();
+            Console.WriteLine("########System Information########");
+            Console.WriteLine("\nCurrent stock:\n");
+            foreach (var soda in _inventory)
+            {
+                Console.WriteLine(
+                    String.Format("{0, -12} - {1}", soda.Name, soda.StockCount)
+                );
+            }
+            Console.WriteLine($"\nTotal money in: {_moneyIn}");
+            Console.ReadLine();
+        }
+
+        private void ReturnCredit()
         {
             _systemMessage = $"{_currentCredit} refunded.";
             _currentCredit = 0;
         }
 
-        public void TryDispenseDrink(Soda soda)
+        private void TryDispenseDrink(Soda soda)
         {
             if (soda.StockCount > 0)
             {
                 if (_currentCredit >= soda.Price)
                 {
                     soda.StockCount--;
+                    _moneyIn += soda.Price;
                     _currentCredit -= soda.Price;
                     ReturnCredit();
                     return;
