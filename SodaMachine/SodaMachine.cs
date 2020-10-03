@@ -33,10 +33,12 @@ namespace SodaMachine
             _functionList = new List<MachineFunction>();
             MachineFunction dispenseFunction = new MachineFunction("order", "Order Drink", TryDispenseDrink);
             MachineFunction insertCoinFunction = new MachineFunction("insert", "Insert coins: (1), (5), (10), (20)", InsertCoin);
+            MachineFunction refundFunction = new MachineFunction("r", "Return Credit", ReturnCredit);
             MachineFunction systemInformationFunction = new MachineFunction("s", "System Information", ShowSystemInformation);
 
             _functionList.Add(dispenseFunction);
             _functionList.Add(insertCoinFunction);
+            _functionList.Add(refundFunction);
             _functionList.Add(systemInformationFunction);
 
             //Initial machine inventory
@@ -166,7 +168,7 @@ namespace SodaMachine
         }
 
         //Return credits to user
-        private void ReturnCredit()
+        private void ReturnCredit(string option)
         {
             SystemMessage = $"{_currentCredit} refunded.";
             _currentCredit = 0;
@@ -190,7 +192,7 @@ namespace SodaMachine
                         soda.StockCount--;
                         _totalMoneyIn += soda.Price;
                         _currentCredit -= soda.Price;
-                        ReturnCredit();
+                        ReturnCredit(String.Empty);
                         SystemMessage = $"{soda.Name} dispensed!";
                         return;
                     }
