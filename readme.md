@@ -1,4 +1,4 @@
-﻿#Soda Machine
+﻿# Soda Machine
 
 Simple vending machine console application.
 
