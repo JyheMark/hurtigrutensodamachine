@@ -29,6 +29,10 @@ namespace SodaMachine
         #region Constructor
         public SodaMachine()
         {
+            _currentCredit = 0;
+            SystemMessage = "";
+            _totalMoneyIn = 0;
+
             //Machine functions get added and bound here
             _functionList = new List<MachineFunction>();
             MachineFunction dispenseFunction = new MachineFunction("order", "Order Drink", TryDispenseDrink);
@@ -47,10 +51,6 @@ namespace SodaMachine
             Soda sprite = new Soda("Sprite", 0, 25);
             Soda fanta = new Soda("Fanta", 5, 25);
             Restock(coke, sprite, fanta);
-
-            _currentCredit = 0;
-            SystemMessage = "";
-            _totalMoneyIn = 0;
         }
         #endregion
         #region Methods
@@ -78,6 +78,7 @@ namespace SodaMachine
                     );
                 }
 
+                //Display available functions
                 Console.WriteLine("\n");
                 foreach (var function in _functionList)
                 {
@@ -88,7 +89,9 @@ namespace SodaMachine
 
                 Console.WriteLine($"{SystemMessage}");
                 _systemMessage = String.Empty;
+
                 Console.WriteLine("Command: ");
+                //Get user input and check it against list of available commands
                 var input = Console.ReadLine().ToLower().Split(' ');
                 var commandList = _functionList.Where(f => f.CallToken.Equals(input[0]));
 
@@ -96,6 +99,7 @@ namespace SodaMachine
                 {
                     foreach (var command in commandList)
                     {
+                        //If additional arguments are provided, pass them to command else pass empty
                         if (input.Length >= 2)
                             command.Function(input[input.Length - 1] ?? String.Empty);
                         else command.Function(String.Empty);
@@ -183,7 +187,15 @@ namespace SodaMachine
                 return;
             }
 
-            _inventory.Where(s => s.Id == option).ToList().ForEach((soda) => 
+            var matchingDrinks = _inventory.Where(s => s.Id.Equals(option));
+
+            if (!matchingDrinks.Any())
+            {
+                SystemMessage = "Drink doesn't exist";
+                return;
+            }
+
+            foreach (var soda in matchingDrinks)
             {
                 if (soda.StockCount > 0)
                 {
@@ -200,11 +212,11 @@ namespace SodaMachine
                     return;
                 }
                 SystemMessage = "Out of stock!";
-            });
+            }
         }
 
         #endregion
-        #region Nested Class
+        #region Nested Classes
 
         //Machine function class allows us to specify a function token, description and callback argument to execute
         private class MachineFunction
