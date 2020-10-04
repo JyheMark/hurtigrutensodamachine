@@ -14,6 +14,7 @@ namespace SodaMachine
         private int _totalMoneyIn;
         private int _currentUserCredit;
         private string _systemMessage;
+        private Action<string> _writeOutputCallback;
 
         #endregion
         #region Properties
@@ -30,13 +31,14 @@ namespace SodaMachine
         }
         #endregion
         #region Constructor
-        public SodaMachine()
+        public SodaMachine(Action<string> writeOutputCallback)
         {
             _currentUserCredit = 0;
             SystemMessage = String.Empty;
             _totalMoneyIn = 0;
             _machineFunctionList = new List<MachineFunction>();
             _inventory = new List<Soda>();
+            _writeOutputCallback = writeOutputCallback;
 
             //Machine functions get added and bound here
             MachineFunction dispenseFunction = new MachineFunction("order", "Order Drink", TryDispenseDrink);
@@ -58,56 +60,45 @@ namespace SodaMachine
         #endregion
         #region Methods
 
-        public void Start()
-        {
-            while (true)
-            {
-                ShowOptions();
-
-                Console.WriteLine($"\nCredit: {_currentUserCredit}");
-                Console.WriteLine(
-                    SystemMessage.Equals(String.Empty) ? "" : $"\n{SystemMessage}"
-                    );
-                _systemMessage = String.Empty;
-
-                GetUserCommand();
-            }
-        }
-
-        private void ShowOptions()
+        public void ShowDisplay()
         {
             Console.Clear();
-            Console.WriteLine("########Drink Dispenser 5000########\n");
+            _writeOutputCallback("########Drink Dispenser 5000########\n");
 
             foreach (var soda in _inventory)
             {
-                Console.WriteLine(
+                _writeOutputCallback(
                     String.Format("{0, -12} - {1}", soda.Name,
                         (soda.StockCount > 0 ? soda.Price.ToString() + ".-" : "Out of stock"))
                 );
             }
 
-            Console.WriteLine("\n");
+            _writeOutputCallback("\n");
             foreach (var function in _machineFunctionList)
             {
-                Console.WriteLine($"({function.CallToken}) - {function.Description}");
+                _writeOutputCallback($"({function.CallToken}) - {function.Description}");
             }
+
+            _writeOutputCallback($"\nCredit: {_currentUserCredit}");
+            _writeOutputCallback(
+                SystemMessage.Equals(String.Empty) ? "" : $"\n{SystemMessage}"
+                );
+            _systemMessage = String.Empty;
         }
 
-        private void GetUserCommand()
+        public void ProcessUserInput(IEnumerable<string> inputArgsArray) 
         {
-            Console.WriteLine("Command: ");
+            _writeOutputCallback("Command: ");
 
-            var inputArgsArray = Console.ReadLine().ToLower().Split(' ');
-            var matchingMachineFunctionsList = _machineFunctionList.Where(f => f.CallToken.Equals(inputArgsArray[0]));
+            var matchingMachineFunctionsList = _machineFunctionList.Where(f => f.CallToken.Equals(inputArgsArray.ElementAt(0)));
 
             if (matchingMachineFunctionsList.Any())
             {
                 foreach (var function in matchingMachineFunctionsList)
                 {
                     //If additional arguments are provided, pass them to function else pass empty
-                    if (inputArgsArray.Length >= 2)
-                        function.Function(inputArgsArray[inputArgsArray.Length - 1] ?? String.Empty);
+                    if (inputArgsArray.Count() >= 2)
+                        function.Function(inputArgsArray.ElementAt(inputArgsArray.Count() - 1));
                     else function.Function(String.Empty);
                 }
             }
@@ -160,17 +151,17 @@ namespace SodaMachine
         private void ShowSystemInformation(string option)
         {
             Console.Clear();
-            Console.WriteLine("########System Information########");
-            Console.WriteLine("\nCurrent stock:\n");
+            _writeOutputCallback("########System Information########");
+            _writeOutputCallback("\nCurrent stock:\n");
 
             foreach (var soda in _inventory)
             {
-                Console.WriteLine(
+                _writeOutputCallback(
                     String.Format("{0, -12} - {1}", soda.Name, soda.StockCount)
                 );
             }
 
-            Console.WriteLine($"\nTotal money in: {_totalMoneyIn}");
+            _writeOutputCallback($"\nTotal money in: {_totalMoneyIn}");
             Console.ReadLine();
         }
 
