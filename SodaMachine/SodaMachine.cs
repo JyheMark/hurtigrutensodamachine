@@ -22,7 +22,10 @@ namespace SodaMachine
             get { return _systemMessage; }
             set
             {
-                _systemMessage += $"{value}\n";
+                if (value.Equals(String.Empty))
+                    _systemMessage += String.Empty;
+                else
+                    _systemMessage += $"{value}\n";
             }
         }
         #endregion
@@ -30,7 +33,7 @@ namespace SodaMachine
         public SodaMachine()
         {
             _currentCredit = 0;
-            SystemMessage = "";
+            SystemMessage = String.Empty;
             _totalMoneyIn = 0;
 
             //Machine functions get added and bound here
@@ -58,55 +61,61 @@ namespace SodaMachine
         //Start SodaMachine
         public void Start()
         {
-            ShowOptions();
+            while (true)
+            {
+                ShowOptions();
+
+                Console.WriteLine($"\nCredit: {_currentCredit}");
+                Console.WriteLine(
+                    SystemMessage.Equals(String.Empty) ? "" : $"\n{SystemMessage}"
+                    );
+                _systemMessage = String.Empty;
+
+                GetUserCommand();
+            }
         }
 
         //Display options to the user and handle response
         private void ShowOptions()
         {
-            while (true)
+            Console.Clear();
+            Console.WriteLine("########Drink Dispenser 5000########\n");
+
+            //Display current stock
+            foreach (var soda in _inventory)
             {
-                Console.Clear();
-                Console.WriteLine("########Drink Dispenser 5000########\n");
-
-                //Display current stock
-                foreach (var soda in _inventory)
-                {
-                    Console.WriteLine(
-                        String.Format("{0, -12} - {1}", soda.Name,
-                            (soda.StockCount > 0 ? soda.Price.ToString() + ".-" : "Out of stock"))
-                    );
-                }
-
-                //Display available functions
-                Console.WriteLine("\n");
-                foreach (var function in _functionList)
-                {
-                    Console.WriteLine($"({function.CallToken}) - {function.Description}");
-                }
-
-                Console.WriteLine($"\nCredit: {_currentCredit}");
-
-                Console.WriteLine($"{SystemMessage}");
-                _systemMessage = String.Empty;
-
-                Console.WriteLine("Command: ");
-                //Get user input and check it against list of available commands
-                var input = Console.ReadLine().ToLower().Split(' ');
-                var commandList = _functionList.Where(f => f.CallToken.Equals(input[0]));
-
-                if (commandList.Any())
-                {
-                    foreach (var command in commandList)
-                    {
-                        //If additional arguments are provided, pass them to command else pass empty
-                        if (input.Length >= 2)
-                            command.Function(input[input.Length - 1] ?? String.Empty);
-                        else command.Function(String.Empty);
-                    }
-                }
-                else SystemMessage = "Unrecognized command";
+                Console.WriteLine(
+                    String.Format("{0, -12} - {1}", soda.Name,
+                        (soda.StockCount > 0 ? soda.Price.ToString() + ".-" : "Out of stock"))
+                );
             }
+
+            //Display available functions
+            Console.WriteLine("\n");
+            foreach (var function in _functionList)
+            {
+                Console.WriteLine($"({function.CallToken}) - {function.Description}");
+            }
+        }
+
+        private void GetUserCommand()
+        {
+            Console.WriteLine("Command: ");
+            //Get user input and check it against list of available commands
+            var input = Console.ReadLine().ToLower().Split(' ');
+            var commandList = _functionList.Where(f => f.CallToken.Equals(input[0]));
+
+            if (commandList.Any())
+            {
+                foreach (var command in commandList)
+                {
+                    //If additional arguments are provided, pass them to command else pass empty
+                    if (input.Length >= 2)
+                        command.Function(input[input.Length - 1] ?? String.Empty);
+                    else command.Function(String.Empty);
+                }
+            }
+            else SystemMessage = "Unrecognized command";
         }
 
         //Add drink to machine
@@ -204,8 +213,8 @@ namespace SodaMachine
                         soda.StockCount--;
                         _totalMoneyIn += soda.Price;
                         _currentCredit -= soda.Price;
-                        ReturnCredit(String.Empty);
                         SystemMessage = $"{soda.Name} dispensed!";
+                        ReturnCredit(String.Empty);
                         return;
                     }
                     SystemMessage = "Not enough credit";
