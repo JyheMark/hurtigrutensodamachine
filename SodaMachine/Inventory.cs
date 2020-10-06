@@ -6,7 +6,7 @@ namespace SodaMachine
 {
     class Inventory
     {
-        List<InventoryItem> _inventory;
+        private List<InventoryItem> _inventory;
 
         public Inventory()
         {
