@@ -7,12 +7,14 @@ namespace SodaMachine
     class Inventory
     {
         private Func<int, bool> _canAffordCallback;
+        private Action<int> _makePurchaseCallback;
         public List<InventoryItem> InventoryList { get; private set; }
 
-        public Inventory(Func<int, bool> canAffordCallback)
+        public Inventory(Func<int, bool> canAffordCallback, Action<int> makePurchaseCallback)
         {
             InventoryList = new List<InventoryItem>();
             _canAffordCallback = canAffordCallback;
+            _makePurchaseCallback = makePurchaseCallback;
         }
 
         public void AddSoda(Soda soda, int stock)
@@ -44,6 +46,7 @@ namespace SodaMachine
                     if (_canAffordCallback(inventoryItem.Soda.Price))
                     {
                         inventoryItem.Stock--;
+                        _makePurchaseCallback(inventoryItem.Soda.Price);
                         userInteraction.AppendSystemMessage($"{inventoryItem.Soda.Name} dispensed!");
                         return true;
                     }

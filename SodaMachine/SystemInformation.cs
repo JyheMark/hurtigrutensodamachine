@@ -6,35 +6,36 @@ namespace SodaMachine
 {
     class SystemInformation
     {
-        private static SystemInformation _systemInformation = null;
-        private int _totalMoneyIn;
+        private Inventory _inventory;
+        private MoneyHandler _moneyHandler;
 
-        public static SystemInformation Instance
+        public SystemInformation(Inventory inventory, MoneyHandler moneyHandler)
         {
-            get
-            {
-                if (_systemInformation == null)
-                {
-                    _systemInformation = new SystemInformation();
-                }
-
-                return _systemInformation;
-            }
-
-            private set
-            {
-                _systemInformation = value;
-            }
-        }
-
-        private SystemInformation()
-        {
-            _totalMoneyIn = 0;
+            _inventory = inventory;
+            _moneyHandler = moneyHandler;
         }
 
         public bool ShowSystemInformation(string args)
         {
-            return false;
+            string output = String.Empty;
+            UserInteraction userInteraction = UserInteraction.Instance;
+
+            output += "########System Information##########\n\n";
+            output += "Stock\n\n";
+            foreach (var inventoryItem in _inventory.InventoryList)
+            {
+                output += String.Format("{0, -12}: {1}", inventoryItem.Soda.Name, inventoryItem.Stock + "\n");
+            }
+
+            output += "Statistics\n";
+            output += $"Total money in: {_moneyHandler.TotalMoneyIn}\n";
+            output += $"Total purchases: {_moneyHandler.TotalTransactions}\n";
+
+            userInteraction.AppendMessageToOutput(output);
+            userInteraction.SendOutput();
+            userInteraction.GetInput("Press any key to go back");
+
+            return true;
         }
     }
 }

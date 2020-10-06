@@ -8,7 +8,7 @@ namespace SodaMachine
     {
         public void BuildOptions(FunctionManager functionManager, Inventory inventory, MoneyHandler moneyHandler)
         {
-            string output = "";
+            string output = String.Empty;
             UserInteraction userInteraction = UserInteraction.Instance;
 
             output += "########Drink Dispenser 5000########\n\n";

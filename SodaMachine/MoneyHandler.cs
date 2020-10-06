@@ -6,11 +6,15 @@ namespace SodaMachine
 {
     class MoneyHandler
     {
+        public int TotalMoneyIn { get; private set; }
         public int CurrentUserCredit { get; private set; }
+        public int TotalTransactions { get; private set; }
 
         public MoneyHandler()
         {
             CurrentUserCredit = 0;
+            TotalMoneyIn = 0;
+            TotalTransactions = 0;
         }
 
         public bool InsertCoin(string coin)
@@ -45,6 +49,14 @@ namespace SodaMachine
         public bool CheckEnoughCredit(int intent)
         {
             return (CurrentUserCredit >= intent);
+        }
+
+        public void makePurchase(int amount)
+        {
+            TotalMoneyIn += amount;
+            CurrentUserCredit -= amount;
+            TotalTransactions++;
+            ReturnCredit("");
         }
 
         public bool ReturnCredit(string args)
