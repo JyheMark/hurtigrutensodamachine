@@ -26,8 +26,7 @@ namespace SodaMachine
             {
                 output += String.Format("{0, -12}: {1}", inventoryItem.Soda.Name, inventoryItem.Stock + "\n");
             }
-
-            output += "Statistics\n";
+            output += "\nStatistics\n\n";
             output += $"Total money in: {_moneyHandler.TotalMoneyIn}\n";
             output += $"Total purchases: {_moneyHandler.TotalTransactions}\n";
 
