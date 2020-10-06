@@ -6,31 +6,61 @@ namespace SodaMachine
 {
     class UserInteraction
     {
-        private static UserInteraction _userInsteraction = null;
+        private static UserInteraction _userInteraction = null;
         private string _message;
+        private string _systemMessage;
 
-        public static UserInteraction GetUserInteraction()
+        public static UserInteraction Instance
         {
-            if (_userInsteraction == null)
-                _userInsteraction = new UserInteraction();
+            get
+            {
+                if (_userInteraction == null)
+                    _userInteraction = new UserInteraction();
 
-            return _userInsteraction;
+                return _userInteraction;
+            }
+            set
+            {
+                _userInteraction = value;
+            }
+        }
+
+        private UserInteraction()
+        {
+            _message = String.Empty;
+            _systemMessage = String.Empty;
         }
 
         public void AppendMessageToOutput(string message)
         {
-            _message += $"\n{message}\n";
+            _message += $"{message}";
         }
 
-        public string[] GetInput()
+        public void AppendSystemMessage(string message)
         {
-            return Console.ReadLine().Split(' ');
+            _systemMessage += $"{message}\n";
+        }
+
+        public string[] GetInput(string message)
+        {
+            Console.WriteLine(message);
+            return Console.ReadLine().ToLower().Split(' ');
         }
 
         public void SendOutput()
         {
+            Console.Clear();
             Console.WriteLine(_message);
-            _message = "";
+
+            if (_systemMessage != String.Empty)
+            {
+                Console.WriteLine(_systemMessage);
+            }
+            else
+                Console.WriteLine("\n");
+
+            _message = String.Empty;
+            _systemMessage = String.Empty;
         }
     }
 }

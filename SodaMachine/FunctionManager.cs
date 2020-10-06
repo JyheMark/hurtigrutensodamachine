@@ -7,32 +7,51 @@ namespace SodaMachine
 {
     class FunctionManager
     {
-        private List<MachineFunction> _machineFunctionList;
+        public List<MachineFunction> MachineFunctionList { get; private set; }
 
         public FunctionManager()
         {
-            _machineFunctionList = new List<MachineFunction>();
+            MachineFunctionList = new List<MachineFunction>();
         }
 
-        public bool AddFunction(string callToken, string description, Action<string> function)
+        public bool AddFunction(string callToken, string description, Func<string, bool> function)
         {
-            var matchingCallTokens = _machineFunctionList.Where(f => f.CallToken.Equals(callToken));
-            if (matchingCallTokens.Any())
+            callToken = callToken.ToLower();
+            var matchingFunctions = MachineFunctionList.Where(f => f.CallToken.Equals(callToken));
+            if (matchingFunctions.Any())
                 return false;
 
             MachineFunction newFunction = new MachineFunction(callToken, description, function);
-            _machineFunctionList.Add(newFunction);
+            MachineFunctionList.Add(newFunction);
 
             return true;
         }
 
-        private class MachineFunction
+        public bool RunFunction(string callToken, string args)
+        {
+            callToken = callToken.ToLower();
+            var matchingFunctions = MachineFunctionList.Where(f => f.CallToken.Equals(callToken));
+            if (!matchingFunctions.Any())
+            {
+                UserInteraction.Instance.AppendSystemMessage("Unknown Command");
+                return false;
+            }
+
+            foreach (var function in matchingFunctions)
+            {
+                function.Function(args);
+            }
+
+            return true;
+        }
+
+        public class MachineFunction
         {
             public string CallToken { get; private set; }
             public string Description { get; private set; }
-            public Action<string> Function { get; private set; }
+            public Func<string, bool> Function { get; private set; }
 
-            public MachineFunction(string callToken, string description, Action<string> function)
+            public MachineFunction(string callToken, string description, Func<string, bool> function)
             {
                 this.CallToken = callToken;
                 this.Description = description;

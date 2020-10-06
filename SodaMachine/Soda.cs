@@ -7,20 +7,15 @@ namespace SodaMachine
     class Soda
     {
         public string Id { get; private set; }
+        public int Price { get; private set; }
 
-        public string Name 
-        {
-            get { return Name; }
-            set
-            {
-                Name = value;
-                Id = value.ToUpper();
-            }
-        }
+        public string Name { get; private set; }
 
-        public Soda(string sodaName)
+        public Soda(string sodaName, int sodaPrice)
         {
             this.Name = sodaName;
+            this.Id = sodaName.ToLower();
+            this.Price = sodaPrice;
         }
     }
 }
