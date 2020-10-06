@@ -11,16 +11,24 @@ namespace SodaMachine_Test
     public class InventoryTests
     {
         [TestMethod]
-        public void CheckingStock()
+        public void CheckingStockLevels()
         {
             Inventory inventory = new Inventory((args) => { return true; });
             inventory.AddSoda(new Soda("Coke", 25), 5);
-            
-            Assert.IsTrue(inventory.AddSoda(new Soda("Fanta", 25), 0), "Inventory failed to insert unique soda");
-            Assert.IsFalse(inventory.AddSoda(new Soda("Coke", 25), 5), "Inventory to inserted soda with duplicate code");
+            inventory.AddSoda(new Soda("Coke", 25), 0);
+
             Assert.IsTrue(inventory.TryDispenseSoda("coke"), "Couldn't dispense soda but it is in stock");
             Assert.IsFalse(inventory.TryDispenseSoda("fanta"), "Dispensed soda but it is out of stock");
             Assert.IsFalse(inventory.TryDispenseSoda("notadrink"), "Dispensed soda but soda doesn't exist");
+        }
+
+        [TestMethod]
+        public void AddingSoda()
+        {
+            Inventory inventory = new Inventory((args) => { return true; });
+
+            Assert.IsTrue(inventory.AddSoda(new Soda("Fanta", 25), 0), "Inventory failed to insert unique soda");
+            Assert.IsFalse(inventory.AddSoda(new Soda("Fanta", 25), 0), "Inventory inserted soda with duplicate code");
         }
     }
 }
