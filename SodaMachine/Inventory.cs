@@ -4,28 +4,27 @@ using System.Linq;
 
 namespace SodaMachine
 {
-    class Inventory
+    public class Inventory
     {
-        private Func<int, bool> _canAffordCallback;
-        private Action<int> _makePurchaseCallback;
+        private Func<int, bool> _makePurchaseCallback;
         public List<InventoryItem> InventoryList { get; private set; }
 
-        public Inventory(Func<int, bool> canAffordCallback, Action<int> makePurchaseCallback)
+        public Inventory(Func<int, bool> makePurchaseCallback)
         {
             InventoryList = new List<InventoryItem>();
-            _canAffordCallback = canAffordCallback;
             _makePurchaseCallback = makePurchaseCallback;
         }
 
-        public void AddSoda(Soda soda, int stock)
+        public bool AddSoda(Soda soda, int stock)
         {
-            InventoryList.ForEach((inventoryItem) => 
+            foreach (var item in InventoryList)
             {
-                if (inventoryItem.Soda.Id.Equals(soda.Id))
-                    return;
-            });
+                if (item.Soda.Id.Equals(soda.Id))
+                    return false;
+            }
 
             InventoryList.Add(new InventoryItem(soda, stock));
+            return true;
         }
 
         public bool TryDispenseSoda(string sodaId)
@@ -43,10 +42,9 @@ namespace SodaMachine
             {
                 if (inventoryItem.Stock > 0)
                 {
-                    if (_canAffordCallback(inventoryItem.Soda.Price))
+                    if (_makePurchaseCallback(inventoryItem.Soda.Price))
                     {
                         inventoryItem.Stock--;
-                        _makePurchaseCallback(inventoryItem.Soda.Price);
                         userInteraction.AppendSystemMessage($"{inventoryItem.Soda.Name} dispensed!");
                         return true;
                     }

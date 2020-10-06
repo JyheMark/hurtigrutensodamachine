@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SodaMachine
 {
-    class FunctionManager
+    public class FunctionManager
     {
         public List<MachineFunction> MachineFunctionList { get; private set; }
 

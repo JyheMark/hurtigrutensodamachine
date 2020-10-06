@@ -4,7 +4,7 @@ using System.Text;
 
 namespace SodaMachine
 {
-    class MoneyHandler
+    public class MoneyHandler
     {
         public int TotalMoneyIn { get; private set; }
         public int CurrentUserCredit { get; private set; }
@@ -46,17 +46,17 @@ namespace SodaMachine
             }
         }
 
-        public bool CheckEnoughCredit(int intent)
+        public bool MakePurchase(int amount)
         {
-            return (CurrentUserCredit >= intent);
-        }
-
-        public void makePurchase(int amount)
-        {
-            TotalMoneyIn += amount;
-            CurrentUserCredit -= amount;
-            TotalTransactions++;
-            ReturnCredit("");
+            if (CurrentUserCredit >= amount)
+            {
+                TotalMoneyIn += amount;
+                CurrentUserCredit -= amount;
+                TotalTransactions++;
+                ReturnCredit("");
+                return true;
+            }
+            return false;
         }
 
         public bool ReturnCredit(string args)

@@ -9,7 +9,7 @@ namespace SodaMachine
         {
             UserInteraction userInteraction = UserInteraction.Instance;
             MoneyHandler moneyHandler = new MoneyHandler();
-            Inventory inventory = new Inventory(moneyHandler.CheckEnoughCredit, moneyHandler.makePurchase);
+            Inventory inventory = new Inventory(moneyHandler.MakePurchase);
             SystemInformation systemInformation = new SystemInformation(inventory, moneyHandler);
             FunctionManager functionManager = new FunctionManager();
             OptionDisplayBuilder optionDisplayBuilder = new OptionDisplayBuilder();
