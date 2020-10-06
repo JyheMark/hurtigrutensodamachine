@@ -23,7 +23,6 @@ namespace SodaMachine
             inventory.AddSoda(new Soda("Sprite", 25), 0);
             inventory.AddSoda(new Soda("Fanta", 25), 5);
 
-
             while (true)
             {
                 optionDisplayBuilder.BuildOptions(functionManager, inventory, moneyHandler);
