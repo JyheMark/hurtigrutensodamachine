@@ -6,43 +6,16 @@ namespace SodaMachine
 {
     class Soda
     {
-        #region Fields
+        public string Id { get; private set; }
+        public int Price { get; private set; }
 
-        private string _name;
-        private string _id;
+        public string Name { get; private set; }
 
-        #endregion
-        #region Properties
-
-        public string Id 
-        { 
-            get { return _id; } 
-            private set { _id = value.ToLower(); } 
-        }
-
-        public string Name 
+        public Soda(string sodaName, int sodaPrice)
         {
-            get { return _name; }
-            set 
-            { 
-                _name = value; 
-                Id = value.ToLower(); 
-            }
+            this.Name = sodaName;
+            this.Id = sodaName.ToLower();
+            this.Price = sodaPrice;
         }
-
-        public int StockCount { get; set; }
-        public int Price { get; set; }
-
-        #endregion
-        #region Constructor
-
-        public Soda(string name, int stockCount, int price)
-        {
-            this.Name = name;
-            this.StockCount = stockCount;
-            this.Price = price;
-        }
-
-        #endregion
     }
 }
